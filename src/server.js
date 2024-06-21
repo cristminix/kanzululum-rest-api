@@ -1,8 +1,14 @@
-import { Hono } from "hono";
-const app = new Hono();
+import { Hono } from "hono"
+const app = new Hono()
+import UserStorage from "./UserStorage"
 
-app.get("/", (ctx) => ctx.text("Hello world, this is Hono!!"));
+app.get("/", async (ctx) => {
+  const userStorage = new UserStorage(ctx)
+  await userStorage.create("bbd33")
+  const user = await userStorage.get("bbd33")
+  return ctx.json({user})
+})
 app.get("/public/*", async (ctx) => {
-  return await ctx.env.ASSETS.fetch(ctx.req.raw);
-});
-export default app;
+  return await ctx.env.ASSETS.fetch(ctx.req.raw)
+})
+export default app
