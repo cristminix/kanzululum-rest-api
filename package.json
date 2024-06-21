@@ -1,0 +1,25 @@
+{
+  "name": "kanzululum-rest-api",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "run-p dev:*",
+    "dev:wrangler": "wrangler pages dev dist --live-reload",
+    "dev:esbuild": "esbuild --bundle src/server.js --format=esm --watch --outfile=dist/_worker.js",
+    "build": "esbuild --bundle src/server.js --format=esm --outfile=dist/_worker.js",
+    "deploy": "wrangler pages publish dist"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.4.5",
+    "esbuild": "^0.21.5",
+    "hono": "^4.4.7",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^3.3.2",
+    "vitest": "1.5.0",
+    "wrangler": "^3.60.3"
+  },
+  "packageManager": "pnpm@9.3.0+sha256.e1f9e8d1a16607a46dd3c158b5f7a7dc7945501d1c6222d454d63d033d1d918f",
+  "dependencies": {
+    "resend": "^3.3.0"
+  }
+}
