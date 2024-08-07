@@ -19,8 +19,8 @@ export const recaptcha = (
         method: 'POST',
       },
     )
-      .then((res) => res.json())
-      .then((res) => {
+      .then((res:Response) => res.json())
+      .then((res:any) => {
         if (!res.success || res.score <= options.score) {
           throw new HTTPException(400, {
             message: 'reCAPTCHA validation failed',

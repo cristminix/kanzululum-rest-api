@@ -1,0 +1,24 @@
+{
+	"compilerOptions": {
+		"target": "ES2020", // Modern target for async/await
+		"module": "esnext",
+		"moduleResolution": "bundler",
+		"lib": ["esnext"],
+		"types": ["@cloudflare/workers-types/experimental", "@cloudflare/vitest-pool-workers"],
+		"allowSyntheticDefaultImports": true, // Allow default imports
+		"esModuleInterop": true, // Enable interoperability between CommonJS and ES modules
+		"strict": true, // Enable strict type checking
+		"noImplicitAny": true, // No implicit 'any' types
+		"strictNullChecks": true, // Enable strict null checks
+		"skipLibCheck": true, // Skip type checking of all declaration files
+		"forceConsistentCasingInFileNames": true, // Ensure consistent casing in file names
+		"baseUrl": ".",
+		"paths": {
+			"@/*": ["src/*"]
+		},
+		"outDir": "dist"
+	},
+	"include": ["src/**/*.ts", "src/**/*.d.ts"],
+	"references": [{ "path": "./tsconfig.node.json" }],
+	"exclude": ["node_modules"] // Exclude 'node_modules' directory
+}

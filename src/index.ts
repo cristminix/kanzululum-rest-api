@@ -1,4 +1,4 @@
-import { Hono } from "hono"
+import { Context, Hono } from "hono"
 import { cors } from "hono/cors"
 import { env } from "hono/adapter"
 import { getConnInfo } from "hono/cloudflare-workers"
@@ -8,10 +8,17 @@ import UserStorage from "./UserStorage"
 // import { crc32id } from "./global/fn/crc32id"
 import { validateEmail } from "./global/fn/validateEmail"
 import { validateCaptchaToken } from "./global/fn/validateCaptchaToken"
-
+import { Env } from "./global/types/Env"
+interface IContactFormData{
+  name:string
+  email:string
+  subject:string
+  comments:string
+  captchaToken:string
+}
 const validAppIds = ["kanzululum-web"]
 // enable cors
-const validateContactData = async (postData) => {
+const validateContactData = async (postData:IContactFormData) => {
   const fieldNames = ["name", "email", "subject", "comments", "captchaToken"]
   const fieldCaps = ["Nama", "Email", "Subyect", "Pesan", "Captcha"]
 
@@ -20,7 +27,7 @@ const validateContactData = async (postData) => {
   let errorMessage = ""
 
   for (const field of fieldNames) {
-    const value = postData[field]
+    const value = postData[field as keyof IContactFormData]
 
     if (!value || value == "" || value == null) {
       errorMessage = field === "captchaToken" ? "Silahkan ceklist keamanan" : `* Silahkan masukkan ${fieldCaps[idx]} *`
@@ -34,9 +41,10 @@ const validateContactData = async (postData) => {
         let { success } = result
         if (!success) {
           valid = false
+          if(result.message)
           errorMessage = result.message
         }
-      } catch (e) {
+      } catch (e:any) {
         valid = false
         errorMessage = e.toString()
       }
@@ -50,21 +58,26 @@ const validateContactData = async (postData) => {
   return { valid, errorMessage }
 }
 
-app.use("*", (c, next) => {
+app.use("*", (c:Context, next) => {
   const origins = c.env.ALLOWED_ORIGINS == "*" ? "*" : c.env.ALLOWED_ORIGINS.split(",")
   // console.log(origins)
   const corsMiddleware = cors(origins)
   return corsMiddleware(c, next)
 })
 
-app.post("/contact/identity", async (c) => {
+interface IIdentityFormData {
+  appId:string
+  clientId:string
+}
+app.post("/contact/identity", async (c:Context) => {
   const { kvStorage } = env(c)
   const postData = await c.req.parseBody()
   const { appId, clientId } = postData
   let ticket = null
   const info = getConnInfo(c)
-  const ipAddr = info.remote.addr ?? "127.0.0.1"
-  if (validAppIds.includes(appId)) {
+
+  const ipAddr = info.remote.address ?? "127.0.0.1"
+  if (validAppIds.includes(appId as string)) {
     ticket = `${appId}-${clientId}-${ipAddr}`
     await kvStorage.put(ticket, "true")
   }
@@ -73,21 +86,21 @@ app.post("/contact/identity", async (c) => {
 })
 
 app.post("/contact/send", async (c) => {
-  const { kvStorage } = env(c)
+  const { kvStorage } = env(c) as unknown as Env
 
   const postData = await c.req.parseBody()
-  const { ticket, appId, clientId, subject, name, email, comments, captchaToken } = postData
-  const hasValidTicket = "true" === (await kvStorage.get(ticket))
+  const { ticket, appId, clientId, subject, name, email, comments, captchaToken } = postData 
+  const hasValidTicket = "true" === (await kvStorage.get(ticket as string))
 
-  if (!validAppIds.includes(appId)) return c.json({ success: false, message: `appId is not registered` })
+  if (!validAppIds.includes(appId as string)) return c.json({ success: false, message: `appId is not registered` })
 
   if (!hasValidTicket) return c.json({ success: false, message: `invalid ticket` })
 
-  const { valid, errorMessage } = await validateContactData(postData)
+  const { valid, errorMessage } = await validateContactData(postData as any )
 
   if (!valid) return c.json({ success: false, message: errorMessage })
 
-  await kvStorage.delete(ticket)
+  await kvStorage.delete(ticket as string)
   // send email
   const from = "kontact@ponpeskanzululumcirebon.com"
   const to = "kanzululumdotcom@gmail.com"

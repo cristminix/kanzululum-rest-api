@@ -1,5 +1,5 @@
 // import crypto from "crypto"
-async function generateOTP(secret, timePeriodOffset = 0) {
+async function generateOTP(secret:string, timePeriodOffset = 0) {
 
     // Get the current time
     const time = Math.floor(Date.now() / 1000)
@@ -39,7 +39,7 @@ async function generateOTP(secret, timePeriodOffset = 0) {
     return otpStr
   }
   
-  async function verifyOTP(otp, secret) {
+  async function verifyOTP(otp:string, secret:string) {
     // Check the OTP for the current time period and the previous and next time periods
     const otps = [
         await generateOTP(secret, -1),
